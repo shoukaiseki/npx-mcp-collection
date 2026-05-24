@@ -149,6 +149,9 @@ public class Db2Query {
         String username = System.getenv("DB2_USERNAME");
         String password = System.getenv("DB2_PASSWORD");
 
+        System.err.println("DEBUG: JDBC_URL = " + jdbcUrl);
+        System.err.println("DEBUG: USERNAME = " + username);
+        
         if (jdbcUrl == null || username == null || password == null) {
             throw new Exception("Missing required environment variables: DB2_JDBC_URL, DB2_USERNAME, DB2_PASSWORD");
         }
@@ -187,6 +190,6 @@ public class Db2Query {
         result.put("rowCount", rows.length());
         result.put("truncated", false);
 
-        return result.toString();
+        return result.toString(0);
     }
 }

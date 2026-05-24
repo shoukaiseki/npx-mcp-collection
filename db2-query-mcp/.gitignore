@@ -19,6 +19,7 @@ selenium-debug.log
 *.sln
 *.local
 
-package-lock.json
 yarn.lock
 jyy001dist.tar.gz
+*.tgz
+db2-query-mcp-*.tgz

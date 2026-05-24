@@ -99,6 +99,14 @@ async function createMcpServer() {
         properties: {},
       },
     },
+    {
+      name: "test_chinese_encoding",
+      description: "Test Chinese character encoding - returns Chinese text directly from Node.js",
+      inputSchema: {
+        type: "object",
+        properties: {},
+      },
+    },
   ];
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -136,6 +144,18 @@ async function createMcpServer() {
 
         case "get_database_info": {
           result = await dbService.getDatabaseInfo();
+          break;
+        }
+
+        case "test_chinese_encoding": {
+          result = {
+            message: "中文测试 - Node.js 直接返回中文",
+            timestamp: new Date().toISOString(),
+            test: "这是一段测试中文，包含特殊字符：你好世界！🌟✨🎉",
+            encoding: "UTF-8",
+            platform: process.platform,
+            nodeVersion: process.version
+          };
           break;
         }
 

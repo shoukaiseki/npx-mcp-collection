@@ -2,12 +2,14 @@
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import iconv from 'iconv-lite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const JAVA_DIR = path.resolve(__dirname, '..', 'java');
 const JAVA_JAR = path.join(JAVA_DIR, 'jcc-11.5.9.0.jar');
+const JAVA_JSON_JAR = path.join(JAVA_DIR, 'json-20251224.jar');
 const JAVA_CLASS = 'Db2Query';
 
 interface QueryResult {
@@ -80,8 +82,9 @@ export class Db2QueryService {
   private executeJavaCommand(mode: string, ...args: string[]): Promise<QueryResult> {
     return new Promise((resolve, reject) => {
       const javaArgs = [
+        '-Dfile.encoding=UTF-8',
         '-cp',
-        `.;${JAVA_JAR}`,
+        `.;${JAVA_JAR};${JAVA_JSON_JAR}`,
         JAVA_CLASS,
         mode,
         ...args
@@ -104,11 +107,11 @@ export class Db2QueryService {
       });
 
       proc.stdout?.on('data', (data) => {
-        stdout += data.toString();
+        stdout += iconv.decode(data, 'utf-8');
       });
 
       proc.stderr?.on('data', (data) => {
-        stderr += data.toString();
+        stderr += iconv.decode(data, 'utf-8');
       });
 
       proc.on('close', (code) => {
