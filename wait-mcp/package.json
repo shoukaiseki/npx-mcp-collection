@@ -1,0 +1,23 @@
+{
+  "name": "shoukaiseki-wait-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for waiting N seconds",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "wait-mcp": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "wait"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  }
+}
