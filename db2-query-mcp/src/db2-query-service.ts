@@ -50,9 +50,13 @@ export class Db2QueryService {
     }
   }
 
-  async queryBySql(sql: string, limit: number = 200): Promise<QueryResult> {
+  async queryBySql(sql: string, limit: number = 200, offset: number = 0): Promise<QueryResult> {
     console.log('[INFO] Executing query:', sql.substring(0, 100) + (sql.length > 100 ? '...' : ''));
     
+    if (offset > 0) {
+      const result = await this.executeJavaCommand('query', sql, limit.toString(), offset.toString());
+      return result;
+    }
     const result = await this.executeJavaCommand('query', sql, limit.toString());
     return result;
   }
@@ -79,7 +83,24 @@ export class Db2QueryService {
     return result;
   }
 
-  private executeJavaCommand(mode: string, ...args: string[]): Promise<QueryResult> {
+  private async executeJavaCommand(mode: string, ...args: string[]): Promise<QueryResult> {
+    const maxRetries = 2;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await this.runJavaProcess(mode, ...args);
+      } catch (error) {
+        if (attempt < maxRetries) {
+          console.warn(`[WARN] Java process failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          throw error;
+        }
+      }
+    }
+    throw new Error('Unreachable');
+  }
+
+  private runJavaProcess(mode: string, ...args: string[]): Promise<QueryResult> {
     return new Promise((resolve, reject) => {
       const javaArgs = [
         '-Dfile.encoding=UTF-8',

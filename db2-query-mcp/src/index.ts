@@ -48,19 +48,23 @@ async function createMcpServer() {
             type: "number",
             description: "Maximum number of rows to return (default 200, max 1000)",
           },
+          offset: {
+            type: "number",
+            description: "Number of rows to skip for pagination (default 0). Use with limit to implement pagination.",
+          },
         },
         required: ["sql"],
       },
     },
     {
-      name: "query_tables",
-      description: "Query list of tables in the database. Supports table name pattern search.",
+      name: "query_maxattributes",
+      description: "Query MAXATTRIBUTE table by object name - returns Maximo attribute metadata including attribute name, type, length, domain, title, multilingual title/remarks, etc.",
       inputSchema: {
         type: "object",
         properties: {
-          tableName: {
+          objectName: {
             type: "string",
-            description: "Table name pattern, supports % wildcard (e.g., %USER%, EMPLOYEE)",
+            description: "Object name to filter by (e.g., WORKORDER, ASSET, LOCATIONS), required",
           },
           schema: {
             type: "string",
@@ -68,27 +72,14 @@ async function createMcpServer() {
           },
           limit: {
             type: "number",
-            description: "Maximum number of tables to return (default 200)",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+          langCode: {
+            type: "string",
+            description: "Language code for multilingual fields (default ZH)",
           },
         },
-      },
-    },
-    {
-      name: "query_table_columns",
-      description: "Query column definitions for a table. Returns column name, data type, length, nullability, etc.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          tableName: {
-            type: "string",
-            description: "Table name",
-          },
-          schema: {
-            type: "string",
-            description: "Schema name, defaults to configured schema",
-          },
-        },
-        required: ["tableName"],
+        required: ["objectName"],
       },
     },
     {
@@ -100,11 +91,25 @@ async function createMcpServer() {
       },
     },
     {
-      name: "test_chinese_encoding",
-      description: "Test Chinese character encoding - returns Chinese text directly from Node.js",
+      name: "query_maxobjects",
+      description: "Query MAXOBJECT table by object name - returns Maximo object metadata including class name, entity name, object name, service name, multilingual description, etc.",
       inputSchema: {
         type: "object",
-        properties: {},
+        properties: {
+          objectName: {
+            type: "string",
+            description: "Object name to filter by (e.g., ITEM, WORKORDER, ASSET), required",
+          },
+          schema: {
+            type: "string",
+            description: "Schema name, defaults to configured schema",
+          },
+          limit: {
+            type: "number",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+        },
+        required: ["objectName"],
       },
     },
   ];
@@ -123,22 +128,17 @@ async function createMcpServer() {
         case "query_by_sql": {
           const sql = args?.sql as string;
           const limit = (args?.limit as number) || DEFAULT_LIMIT;
-          result = await dbService.queryBySql(sql, Math.min(limit, 1000));
+          const offset = (args?.offset as number) || 0;
+          result = await dbService.queryBySql(sql, Math.min(limit, 1000), offset);
           break;
         }
 
-        case "query_tables": {
-          const tableName = (args?.tableName as string) || "%";
-          const schema = args?.schema as string;
+        case "query_maxattributes": {
+          const objectName = args?.objectName as string;
           const limit = (args?.limit as number) || DEFAULT_LIMIT;
-          result = await dbService.queryTables(tableName, schema, limit);
-          break;
-        }
-
-        case "query_table_columns": {
-          const tableName = args?.tableName as string;
-          const schema = args?.schema as string;
-          result = await dbService.queryTableColumns(tableName, schema);
+          const langCode = process.env.LANGCODE || 'ZH';
+          const sql = `SELECT ALIAS, ATTRIBUTENAME, ATTRIBUTENO, AUTOKEYNAME, CANAUTONUM, CLASSNAME, COLUMNNAME, COMPLEXEXPRESSION, DEFAULTVALUE, DOMAINID, EAUDITENABLED, ENTITYNAME, ESIGENABLED, EXTENDED, HANDLECOLUMNNAME, ISLDOWNER, ISPOSITIVE, LENGTH, LOCALIZABLE, MAXATTRIBUTEID, MAXTYPE, MLINUSE, MLSUPPORTED, MUSTBE, OBJECTNAME, PERSISTENT, PRIMARYKEYCOLSEQ, MAXATTRIBUTE.REMARKS, REQUIRED, RESTRICTED, SAMEASATTRIBUTE, SAMEASOBJECT, SCALE, SEARCHTYPE, TEXTDIRECTION, MAXATTRIBUTE.TITLE, USERDEFINED, l.TITLE LZH_TITLE, l.REMARKS LZH_REMARKS FROM MAXATTRIBUTE LEFT JOIN L_MAXATTRIBUTE as l on (MAXATTRIBUTEID=l.OWNERID and l.LANGCODE='${langCode}') WHERE OBJECTNAME='${objectName}'`;
+          result = await dbService.queryBySql(sql, Math.min(limit, 1000));
           break;
         }
 
@@ -147,15 +147,12 @@ async function createMcpServer() {
           break;
         }
 
-        case "test_chinese_encoding": {
-          result = {
-            message: "中文测试 - Node.js 直接返回中文",
-            timestamp: new Date().toISOString(),
-            test: "这是一段测试中文，包含特殊字符：你好世界！🌟✨🎉",
-            encoding: "UTF-8",
-            platform: process.platform,
-            nodeVersion: process.version
-          };
+        case "query_maxobjects": {
+          const objectName = args?.objectName as string;
+          const limit = (args?.limit as number) || DEFAULT_LIMIT;
+          const langCode = process.env.LANGCODE || 'ZH';
+          const sql = `SELECT CLASSNAME, MAXOBJECT.DESCRIPTION, EAUDITENABLED, EAUDITFILTER, ENTITYNAME, ESIGFILTER, EXTENDSOBJECT, HASLD, IMPORTED, INTERNAL, ISVIEW, MAXOBJECT.LANGCODE, MAINOBJECT, MAXOBJECTID, OBJECTNAME, PERSISTENT, RESOURCETYPE, SERVICENAME, SITEORGTYPE, TEXTDIRECTION, USERDEFINED, l.DESCRIPTION LZH_DESCRIPTION FROM MAXOBJECT LEFT JOIN L_MAXOBJECT as l on (MAXOBJECTID=l.OWNERID and l.LANGCODE='${langCode}') WHERE OBJECTNAME='${objectName}'`;
+          result = await dbService.queryBySql(sql, Math.min(limit, 1000));
           break;
         }
 

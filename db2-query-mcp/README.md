@@ -6,7 +6,8 @@
 
 - 🔒 **只读安全**: 严格限制仅允许 SELECT 查询，禁止任何数据修改操作
 - 🌏 **中文支持**: 完美支持中文字符，解决 Windows 编码问题
-- 📊 **元数据查询**: 提供表列表、列信息、数据库信息等查询工具
+- 📊 **Maximo 元数据查询**: 提供 MAXOBJECT、MAXATTRIBUTE 等 Maximo 元数据表专用查询工具
+- 📄 **分页查询**: 支持 offset/limit 分页，方便大数据量浏览
 - 🔧 **灵活配置**: 通过环境变量配置数据库连接
 - ☕ **Java 驱动**: 使用官方 DB2 JDBC 驱动，性能稳定
 - 📝 **TypeScript**: 使用 TypeScript 编写，提供类型安全
@@ -125,7 +126,7 @@ npm install -g shoukaiseki-db2-query-mcp
   "mcpServers": {
     "db2-query": {
       "command": "npx",
-      "args": ["shoukaiseki-db2-query-mcp@1.0.0"],
+      "args": ["shoukaiseki-db2-query-mcp@1.0.1"],
       "env": {
         "JAVA_HOME": "D:\\usr\\java\\jdk1.8.0_491x64",
         "DB2_JDBC_URL": "jdbc:db2://localhost:50000/MYDB:currentSchema=MYSCHEMA;",
@@ -142,77 +143,65 @@ npm install -g shoukaiseki-db2-query-mcp
 
 ### 1. query_by_sql
 
-执行只读 SQL 查询。
+执行只读 SQL 查询，支持分页。
 
 **参数：**
 - `sql` (string, 必填): SELECT 查询语句
+- `limit` (number, 可选): 每页返回行数上限，默认 200，最大 1000
+- `offset` (number, 可选): 跳过的行数，用于分页（默认 0）
+
+**示例：**
+```json
+// 第1页
+{
+  "sql": "SELECT * FROM EMPLOYEE WHERE DEPT = 'IT'",
+  "limit": 100,
+  "offset": 0
+}
+
+// 第2页
+{
+  "sql": "SELECT * FROM EMPLOYEE WHERE DEPT = 'IT'",
+  "limit": 100,
+  "offset": 100
+}
+```
+
+### 2. query_maxobjects
+
+查询 MAXOBJECT 表，返回 Maximo 对象元数据信息。
+
+**参数：**
+- `schema` (string, 可选): Schema 名称，默认为配置中的 schema
+- `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
+
+**返回字段：**
+`CLASSNAME`, `DESCRIPTION`, `EAUDITENABLED`, `EAUDITFILTER`, `ENTITYNAME`, `ESIGFILTER`, `EXTENDSOBJECT`, `HASLD`, `IMPORTED`, `INTERNAL`, `ISVIEW`, `LANGCODE`, `MAINOBJECT`, `MAXOBJECTID`, `OBJECTNAME`, `PERSISTENT`, `RESOURCETYPE`, `SERVICENAME`, `SITEORGTYPE`, `TEXTDIRECTION`, `USERDEFINED`
+
+### 3. query_maxattributes
+
+按对象名称查询 MAXATTRIBUTE 表，返回 Maximo 属性/字段元数据信息。
+
+**参数：**
+- `objectName` (string, 必填): 对象名称（如 `WORKORDER`, `ASSET`, `LOCATIONS`）
+- `schema` (string, 可选): Schema 名称，默认为配置中的 schema
 - `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
 
 **示例：**
 ```json
 {
-  "sql": "SELECT * FROM EMPLOYEE WHERE DEPT = 'IT'",
-  "limit": 100
+  "objectName": "WORKORDER"
 }
 ```
 
-### 2. query_tables
-
-查询数据库中的表列表。
-
-**参数：**
-- `tableName` (string, 可选): 表名关键词，支持 `%` 通配符
-- `schema` (string, 可选): Schema 名称，默认为配置中的 schema
-- `limit` (number, 可选): 返回行数上限，默认 200
-
-**示例：**
-```json
-{
-  "tableName": "%EMP%",
-  "schema": "MYSCHEMA",
-  "limit": 50
-}
-```
-
-### 3. query_table_columns
-
-查询指定表的列/字段定义信息。
-
-**参数：**
-- `tableName` (string, 必填): 表名
-- `schema` (string, 可选): Schema 名称
-
-**示例：**
-```json
-{
-  "tableName": "EMPLOYEE",
-  "schema": "MYSCHEMA"
-}
-```
+**返回字段：**
+`ALIAS`, `ATTRIBUTENAME`, `ATTRIBUTENO`, `AUTOKEYNAME`, `CANAUTONUM`, `CLASSNAME`, `COLUMNNAME`, `COMPLEXEXPRESSION`, `DEFAULTVALUE`, `DOMAINID`, `EAUDITENABLED`, `ENTITYNAME`, `ESIGENABLED`, `EXTENDED`, `HANDLECOLUMNNAME`, `ISLDOWNER`, `ISPOSITIVE`, `LENGTH`, `LOCALIZABLE`, `MAXATTRIBUTEID`, `MAXTYPE`, `MLINUSE`, `MLSUPPORTED`, `MUSTBE`, `OBJECTNAME`, `PERSISTENT`, `PRIMARYKEYCOLSEQ`, `REMARKS`, `REQUIRED`, `RESTRICTED`, `SAMEASATTRIBUTE`, `SAMEASOBJECT`, `SCALE`, `SEARCHTYPE`, `TEXTDIRECTION`, `TITLE`, `USERDEFINED`
 
 ### 4. get_database_info
 
 获取数据库基本信息。
 
 **参数：** 无
-
-### 5. test_chinese_encoding
-
-测试中文编码是否正常。
-
-**参数：** 无
-
-**返回示例：**
-```json
-{
-  "message": "中文测试 - Node.js 直接返回中文",
-  "timestamp": "2024-01-01T00:00:00.000Z",
-  "test": "这是一段测试中文，包含特殊字符：你好世界！🌟✨🎉",
-  "encoding": "UTF-8",
-  "platform": "win32",
-  "nodeVersion": "v20.20.2"
-}
-```
 
 ## 安全特性
 
@@ -224,7 +213,7 @@ npm install -g shoukaiseki-db2-query-mcp
 ### 只读保障
 
 - 自动添加 `FOR READ ONLY` 后缀
-- 使用 `FETCH FIRST n ROWS ONLY` 限制返回行数
+- 使用 `OFFSET n ROWS FETCH NEXT m ROWS ONLY` 实现分页查询
 
 ## 中文编码支持
 
@@ -232,7 +221,7 @@ npm install -g shoukaiseki-db2-query-mcp
 
 1. 使用 `iconv-lite` 库正确处理编码转换
 2. Java 进程添加 `-Dfile.encoding=UTF-8` 参数
-3. 提供测试工具验证编码是否正常
+3. 提供测试工具验证编码是否正常（调用 `get_database_info` 查看返回结果）
 
 详细解决方案请参考 [ENCODING_FIX.md](ENCODING_FIX.md)。
 
@@ -266,7 +255,7 @@ java\test-connection.bat
 
 ### 测试中文编码
 
-在 MCP 客户端中调用 `test_chinese_encoding` 工具。
+在 MCP 客户端中调用 `query_maxobjects` 或 `query_maxattributes` 工具，检查返回的中文字段是否正确显示。
 
 ## 依赖
 

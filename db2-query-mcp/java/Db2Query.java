@@ -38,12 +38,13 @@ public class Db2Query {
 
     private static void executeQuery(String[] args) throws Exception {
         if (args.length < 2) {
-            System.err.println("Usage: java Db2Query query <sql> [limit]");
+            System.err.println("Usage: java Db2Query query <sql> [limit] [offset]");
             System.exit(1);
         }
 
         String sql = args[1];
         int limit = args.length >= 3 ? Integer.parseInt(args[2]) : 200;
+        int offset = args.length >= 4 ? Integer.parseInt(args[3]) : 0;
 
         Connection conn = null;
         Statement stmt = null;
@@ -52,8 +53,18 @@ public class Db2Query {
         try {
             conn = getConnection();
             stmt = conn.createStatement();
-            stmt.setMaxRows(limit);
-            rs = stmt.executeQuery(sql);
+
+            if (offset > 0) {
+                String trimmedSql = sql.trim();
+                if (trimmedSql.endsWith(";")) {
+                    trimmedSql = trimmedSql.substring(0, trimmedSql.length() - 1);
+                }
+                String paginatedSql = trimmedSql + " OFFSET " + offset + " ROWS FETCH NEXT " + limit + " ROWS ONLY";
+                rs = stmt.executeQuery(paginatedSql);
+            } else {
+                stmt.setMaxRows(limit);
+                rs = stmt.executeQuery(sql);
+            }
 
             System.out.println(resultSetToJson(rs));
         } finally {
@@ -165,7 +176,7 @@ public class Db2Query {
         int columnCount = metaData.getColumnCount();
         JSONArray columns = new JSONArray();
         for (int i = 1; i <= columnCount; i++) {
-            columns.put(metaData.getColumnName(i));
+            columns.put(metaData.getColumnLabel(i));
         }
 
         JSONArray rows = new JSONArray();
@@ -174,11 +185,11 @@ public class Db2Query {
             for (int i = 1; i <= columnCount; i++) {
                 Object value = rs.getObject(i);
                 if (value == null) {
-                    row.put(metaData.getColumnName(i), JSONObject.NULL);
+                    row.put(metaData.getColumnLabel(i), JSONObject.NULL);
                 } else if (value instanceof Number) {
-                    row.put(metaData.getColumnName(i), value);
+                    row.put(metaData.getColumnLabel(i), value);
                 } else {
-                    row.put(metaData.getColumnName(i), value.toString());
+                    row.put(metaData.getColumnLabel(i), value.toString());
                 }
             }
             rows.put(row);
