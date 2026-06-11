@@ -112,6 +112,84 @@ async function createMcpServer() {
         required: ["objectName"],
       },
     },
+    {
+      name: "query_active_sites",
+      description: "Query active sites with siteid and orgid from SITE table where ACTIVE=1",
+      inputSchema: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+        },
+      },
+    },
+    {
+      name: "query_active_persons",
+      description: "Query active person/users from PERSON table where status='ACTIVE'",
+      inputSchema: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+        },
+      },
+    },
+    {
+      name: "query_active_items",
+      description: "Query active main items from ITEM table - excludes obsolete items, filters by ITEMSET and ITEM type",
+      inputSchema: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+        },
+      },
+    },
+    {
+      name: "query_inventory",
+      description: "Query current inventory information from INVENTORY table",
+      inputSchema: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+        },
+      },
+    },
+    {
+      name: "query_invbalances",
+      description: "Query inventory balances with itemnum, location, siteid from INVBALANCES table",
+      inputSchema: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+        },
+      },
+    },
+    {
+      name: "query_invlot",
+      description: "Query inventory lots with itemnum, location, siteid from INVLOT table",
+      inputSchema: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+        },
+      },
+    },
   ];
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -153,6 +231,42 @@ async function createMcpServer() {
           const langCode = process.env.LANGCODE || 'ZH';
           const sql = `SELECT CLASSNAME, MAXOBJECT.DESCRIPTION, EAUDITENABLED, EAUDITFILTER, ENTITYNAME, ESIGFILTER, EXTENDSOBJECT, HASLD, IMPORTED, INTERNAL, ISVIEW, MAXOBJECT.LANGCODE, MAINOBJECT, MAXOBJECTID, OBJECTNAME, PERSISTENT, RESOURCETYPE, SERVICENAME, SITEORGTYPE, TEXTDIRECTION, USERDEFINED, l.DESCRIPTION LZH_DESCRIPTION FROM MAXOBJECT LEFT JOIN L_MAXOBJECT as l on (MAXOBJECTID=l.OWNERID and l.LANGCODE='${langCode}') WHERE OBJECTNAME='${objectName}'`;
           result = await dbService.queryBySql(sql, Math.min(limit, 1000));
+          break;
+        }
+
+        case "query_active_sites": {
+          const sql = "select * from site where ACTIVE=1";
+          result = await dbService.queryBySql(sql, Math.min((args?.limit as number) || DEFAULT_LIMIT, 1000));
+          break;
+        }
+
+        case "query_active_persons": {
+          const sql = "select * from person where status='ACTIVE'";
+          result = await dbService.queryBySql(sql, Math.min((args?.limit as number) || DEFAULT_LIMIT, 1000));
+          break;
+        }
+
+        case "query_active_items": {
+          const sql = "select * from item where ((status != 'OBSOLETE' AND itemsetid = 'ITEMSET')) AND (itemtype in (select value from synonymdomain where domainid='ITEMTYPE' and maxvalue = 'ITEM'))";
+          result = await dbService.queryBySql(sql, Math.min((args?.limit as number) || DEFAULT_LIMIT, 1000));
+          break;
+        }
+
+        case "query_inventory": {
+          const sql = "select * from INVENTORY";
+          result = await dbService.queryBySql(sql, Math.min((args?.limit as number) || DEFAULT_LIMIT, 1000));
+          break;
+        }
+
+        case "query_invbalances": {
+          const sql = "select * from INVBALANCES";
+          result = await dbService.queryBySql(sql, Math.min((args?.limit as number) || DEFAULT_LIMIT, 1000));
+          break;
+        }
+
+        case "query_invlot": {
+          const sql = "select * from INVLOT";
+          result = await dbService.queryBySql(sql, Math.min((args?.limit as number) || DEFAULT_LIMIT, 1000));
           break;
         }
 

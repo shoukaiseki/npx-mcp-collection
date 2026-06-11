@@ -53,6 +53,7 @@ npm start
 | `DB2_USERNAME` | ✅ | 数据库用户名 |
 | `DB2_PASSWORD` | ✅ | 数据库密码 |
 | `DB2_SCHEMA` | ❌ | 默认 Schema 名称 |
+| `LANGCODE` | ❌ | 多语言查询语言代码，默认 `ZH` |
 
 ### 配置示例
 
@@ -112,7 +113,8 @@ npm install -g shoukaiseki-db2-query-mcp
         "DB2_JDBC_URL": "jdbc:db2://localhost:50000/MYDB:currentSchema=MYSCHEMA;",
         "DB2_USERNAME": "db2user",
         "DB2_PASSWORD": "db2pass",
-        "DB2_SCHEMA": "MYSCHEMA"
+        "DB2_SCHEMA": "MYSCHEMA",
+        "LANGCODE": "ZH"
       }
     }
   }
@@ -169,23 +171,25 @@ npm install -g shoukaiseki-db2-query-mcp
 
 ### 2. query_maxobjects
 
-查询 MAXOBJECT 表，返回 Maximo 对象元数据信息。
+按对象名称查询 MAXOBJECT 表，返回 Maximo 对象元数据信息，支持多语言描述字段。
 
 **参数：**
+- `objectName` (string, 必填): 对象名称（如 `ITEM`, `WORKORDER`, `ASSET`）
 - `schema` (string, 可选): Schema 名称，默认为配置中的 schema
 - `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
 
 **返回字段：**
-`CLASSNAME`, `DESCRIPTION`, `EAUDITENABLED`, `EAUDITFILTER`, `ENTITYNAME`, `ESIGFILTER`, `EXTENDSOBJECT`, `HASLD`, `IMPORTED`, `INTERNAL`, `ISVIEW`, `LANGCODE`, `MAINOBJECT`, `MAXOBJECTID`, `OBJECTNAME`, `PERSISTENT`, `RESOURCETYPE`, `SERVICENAME`, `SITEORGTYPE`, `TEXTDIRECTION`, `USERDEFINED`
+`CLASSNAME`, `DESCRIPTION`, `EAUDITENABLED`, `EAUDITFILTER`, `ENTITYNAME`, `ESIGFILTER`, `EXTENDSOBJECT`, `HASLD`, `IMPORTED`, `INTERNAL`, `ISVIEW`, `LANGCODE`, `MAINOBJECT`, `MAXOBJECTID`, `OBJECTNAME`, `PERSISTENT`, `RESOURCETYPE`, `SERVICENAME`, `SITEORGTYPE`, `TEXTDIRECTION`, `USERDEFINED`, `LZH_DESCRIPTION`(多语言描述)
 
 ### 3. query_maxattributes
 
-按对象名称查询 MAXATTRIBUTE 表，返回 Maximo 属性/字段元数据信息。
+按对象名称查询 MAXATTRIBUTE 表，返回 Maximo 属性/字段元数据信息，支持多语言标题和备注。
 
 **参数：**
 - `objectName` (string, 必填): 对象名称（如 `WORKORDER`, `ASSET`, `LOCATIONS`）
 - `schema` (string, 可选): Schema 名称，默认为配置中的 schema
 - `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
+- `langCode` (string, 可选): 多语言代码覆盖环境变量 LANGCODE，默认 `ZH`
 
 **示例：**
 ```json
@@ -195,13 +199,55 @@ npm install -g shoukaiseki-db2-query-mcp
 ```
 
 **返回字段：**
-`ALIAS`, `ATTRIBUTENAME`, `ATTRIBUTENO`, `AUTOKEYNAME`, `CANAUTONUM`, `CLASSNAME`, `COLUMNNAME`, `COMPLEXEXPRESSION`, `DEFAULTVALUE`, `DOMAINID`, `EAUDITENABLED`, `ENTITYNAME`, `ESIGENABLED`, `EXTENDED`, `HANDLECOLUMNNAME`, `ISLDOWNER`, `ISPOSITIVE`, `LENGTH`, `LOCALIZABLE`, `MAXATTRIBUTEID`, `MAXTYPE`, `MLINUSE`, `MLSUPPORTED`, `MUSTBE`, `OBJECTNAME`, `PERSISTENT`, `PRIMARYKEYCOLSEQ`, `REMARKS`, `REQUIRED`, `RESTRICTED`, `SAMEASATTRIBUTE`, `SAMEASOBJECT`, `SCALE`, `SEARCHTYPE`, `TEXTDIRECTION`, `TITLE`, `USERDEFINED`
+`ALIAS`, `ATTRIBUTENAME`, `ATTRIBUTENO`, `AUTOKEYNAME`, `CANAUTONUM`, `CLASSNAME`, `COLUMNNAME`, `COMPLEXEXPRESSION`, `DEFAULTVALUE`, `DOMAINID`, `EAUDITENABLED`, `ENTITYNAME`, `ESIGENABLED`, `EXTENDED`, `HANDLECOLUMNNAME`, `ISLDOWNER`, `ISPOSITIVE`, `LENGTH`, `LOCALIZABLE`, `MAXATTRIBUTEID`, `MAXTYPE`, `MLINUSE`, `MLSUPPORTED`, `MUSTBE`, `OBJECTNAME`, `PERSISTENT`, `PRIMARYKEYCOLSEQ`, `REMARKS`, `REQUIRED`, `RESTRICTED`, `SAMEASATTRIBUTE`, `SAMEASOBJECT`, `SCALE`, `SEARCHTYPE`, `TEXTDIRECTION`, `TITLE`, `USERDEFINED`, `LZH_TITLE`(多语言标题), `LZH_REMARKS`(多语言备注)
 
 ### 4. get_database_info
 
 获取数据库基本信息。
 
 **参数：** 无
+
+### 5. query_active_sites
+
+查询有效的站点和组织，对应 `SITE` 表 `ACTIVE=1`。
+
+**参数：**
+- `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
+
+### 6. query_active_persons
+
+查询有效的用户，对应 `PERSON` 表 `status='ACTIVE'`。
+
+**参数：**
+- `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
+
+### 7. query_active_items
+
+查询有效的主项目，排除已废弃项目，过滤 ITEMSET 和 ITEM 类型。
+
+**参数：**
+- `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
+
+### 8. query_inventory
+
+查询当前库存信息，对应 `INVENTORY` 表。
+
+**参数：**
+- `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
+
+### 9. query_invbalances
+
+查询库存余量，包含 itemnum、location、siteid 关联信息。
+
+**参数：**
+- `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
+
+### 10. query_invlot
+
+查询库存批次，包含 itemnum、location、siteid 关联信息。
+
+**参数：**
+- `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
 
 ## 安全特性
 
