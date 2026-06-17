@@ -249,6 +249,13 @@ npm install -g shoukaiseki-db2-query-mcp
 **参数：**
 - `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
 
+### 11. query_companies
+
+查询供应商/公司信息，对应 `COMPANIES` 表。
+
+**参数：**
+- `limit` (number, 可选): 返回行数上限，默认 200，最大 1000
+
 ## 安全特性
 
 ### SQL 注入防护

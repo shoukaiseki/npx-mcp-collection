@@ -1,6 +1,6 @@
 {
   "name": "shoukaiseki-db2-query-mcp",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "DB2 查询 MCP 服务 - 仅支持只读查询，支持 SSE 模式",
   "main": "dist/index.js",
   "type": "module",

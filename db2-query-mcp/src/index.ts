@@ -190,6 +190,19 @@ async function createMcpServer() {
         },
       },
     },
+    {
+      name: "query_companies",
+      description: "Query supplier/vendor companies from COMPANIES table",
+      inputSchema: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Maximum number of rows to return (default 200, max 1000)",
+          },
+        },
+      },
+    },
   ];
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -266,6 +279,12 @@ async function createMcpServer() {
 
         case "query_invlot": {
           const sql = "select * from INVLOT";
+          result = await dbService.queryBySql(sql, Math.min((args?.limit as number) || DEFAULT_LIMIT, 1000));
+          break;
+        }
+
+        case "query_companies": {
+          const sql = "select * from COMPANIES";
           result = await dbService.queryBySql(sql, Math.min((args?.limit as number) || DEFAULT_LIMIT, 1000));
           break;
         }
