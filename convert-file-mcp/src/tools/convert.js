@@ -3,7 +3,7 @@ const { stringify } = require('csv-stringify');
 const { parse: yamlParse, stringify: yamlStringify } = require('yaml');
 const { marked } = require('marked');
 const { parseString, Builder } = require('xml2js');
-const XLSX = require('xlsx');
+const { excelToHtml, excelToMarkdown, excelToJson, excelToCsv } = require('./excel');
 
 async function csv_to_json({ csv_content }) {
   return new Promise((resolve, reject) => {
@@ -87,29 +87,7 @@ async function json_to_xml({ json_content }) {
 async function excel_to_html({ excel_base64 }) {
   try {
     const buffer = Buffer.from(excel_base64, 'base64');
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
-    let html = '';
-    
-    workbook.SheetNames.forEach(sheetName => {
-      const worksheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      
-      html += `<h2>${sheetName}</h2>`;
-      html += '<table border="1" cellpadding="8" cellspacing="0">';
-      
-      data.forEach((row, rowIndex) => {
-        html += '<tr>';
-        row.forEach((cell, colIndex) => {
-          const tag = rowIndex === 0 ? 'th' : 'td';
-          html += `<${tag}>${cell !== undefined ? escapeHtml(cell.toString()) : ''}</${tag}>`;
-        });
-        html += '</tr>';
-      });
-      
-      html += '</table><br>';
-    });
-    
-    return { content: html };
+    return { content: excelToHtml(buffer) };
   } catch (err) {
     return { error: { message: 'Excel解析失败: ' + err.message } };
   }
@@ -118,45 +96,28 @@ async function excel_to_html({ excel_base64 }) {
 async function excel_to_markdown({ excel_base64 }) {
   try {
     const buffer = Buffer.from(excel_base64, 'base64');
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
-    let markdown = '';
-    
-    workbook.SheetNames.forEach(sheetName => {
-      const worksheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      
-      markdown += `## ${sheetName}\n\n`;
-      
-      if (data.length > 0) {
-        data.forEach((row, rowIndex) => {
-          markdown += '| ' + row.map(cell => cell !== undefined ? cell.toString() : '').join(' | ') + ' |';
-          markdown += '\n';
-          
-          if (rowIndex === 0 && data.length > 1) {
-            markdown += '| ' + row.map(() => '---').join(' | ') + ' |';
-            markdown += '\n';
-          }
-        });
-      }
-      
-      markdown += '\n';
-    });
-    
-    return { content: markdown.trim() };
+    return { content: excelToMarkdown(buffer) };
   } catch (err) {
     return { error: { message: 'Excel解析失败: ' + err.message } };
   }
 }
 
-function escapeHtml(text) {
-  const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
-  return text.replace(/[&<>"']/g, m => map[m]);
+async function excel_to_json({ excel_base64 }) {
+  try {
+    const buffer = Buffer.from(excel_base64, 'base64');
+    return { content: excelToJson(buffer) };
+  } catch (err) {
+    return { error: { message: 'Excel解析失败: ' + err.message } };
+  }
+}
+
+async function excel_to_csv({ excel_base64 }) {
+  try {
+    const buffer = Buffer.from(excel_base64, 'base64');
+    return { content: excelToCsv(buffer) };
+  } catch (err) {
+    return { error: { message: 'Excel解析失败: ' + err.message } };
+  }
 }
 
 module.exports = {
@@ -168,5 +129,7 @@ module.exports = {
   xml_to_json,
   json_to_xml,
   excel_to_html,
-  excel_to_markdown
+  excel_to_markdown,
+  excel_to_json,
+  excel_to_csv
 };

@@ -12,7 +12,9 @@ const {
   xml_to_json,
   json_to_xml,
   excel_to_html,
-  excel_to_markdown
+  excel_to_markdown,
+  excel_to_json,
+  excel_to_csv
 } = require('./tools/convert');
 
 async function main() {
@@ -98,6 +100,24 @@ async function main() {
     { excel_base64: z.string().describe('Excel文件的Base64编码内容') },
     async ({ excel_base64 }) => {
       const result = await excel_to_markdown({ excel_base64 });
+      return { content: [{ type: "text", text: result.content }] };
+    }
+  );
+
+  server.tool(
+    "excel_to_json",
+    { excel_base64: z.string().describe('Excel文件的Base64编码内容') },
+    async ({ excel_base64 }) => {
+      const result = await excel_to_json({ excel_base64 });
+      return { content: [{ type: "text", text: result.content }] };
+    }
+  );
+
+  server.tool(
+    "excel_to_csv",
+    { excel_base64: z.string().describe('Excel文件的Base64编码内容') },
+    async ({ excel_base64 }) => {
+      const result = await excel_to_csv({ excel_base64 });
       return { content: [{ type: "text", text: result.content }] };
     }
   );
