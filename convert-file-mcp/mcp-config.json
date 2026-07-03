@@ -1,0 +1,15 @@
+{
+      "sks-convert-file-mcp": {
+        "name": "文件格式转换 MCP",
+        "description": "支持CSV、JSON、YAML、Markdown、HTML、XML、Excel等多种格式之间的相互转换",
+        "command": "npx",
+        "args": [
+          "-y",
+          "sks-convert-file-mcp"
+        ],
+        "env": {
+          "npm_config_registry": "https://registry.npm.taobao.org"
+        },
+        "icon": "📄"
+      }
+}

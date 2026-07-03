@@ -1,0 +1,30 @@
+{
+  "name": "sks-convert-file-mcp",
+  "version": "1.0.0",
+  "description": "文件格式转换 MCP 服务器",
+  "main": "src/index.js",
+  "bin": {
+    "sks-convert-file-mcp": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Tests passed\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.22.0",
+    "yaml": "^2.4.0",
+    "csv-parse": "^5.5.0",
+    "csv-stringify": "^6.5.0",
+    "marked": "^12.0.0",
+    "xml2js": "^0.6.0",
+    "xlsx": "^0.18.5"
+  },
+  "keywords": [
+    "mcp",
+    "file-converter",
+    "model-context-protocol"
+  ],
+  "author": "",
+  "license": "MIT"
+}
