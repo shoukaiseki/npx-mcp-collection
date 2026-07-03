@@ -1,6 +1,6 @@
 {
   "name": "sks-convert-file-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "文件格式转换 MCP 服务器",
   "main": "src/index.js",
   "bin": {
@@ -26,5 +26,5 @@
     "model-context-protocol"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MulanPSL-2.0"
 }
