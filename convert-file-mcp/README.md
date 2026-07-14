@@ -14,29 +14,47 @@ npx sks-convert-file-mcp
 
 ## MCP 客户端配置
 
-在支持 MCP 的客户端（如 Claude Desktop、Cursor 等）中添加以下配置：
+在支持 MCP 的客户端中添加以下配置：
+
+### 通用模式（22个工具，内容传参 + 文件路径）
 
 ```json
 {
-      "sks-convert-file-mcp": {
-        "name": "文件格式转换 MCP",
-        "description": "支持CSV、JSON、YAML、Markdown、HTML、XML、Excel等多种格式之间的相互转换",
-        "command": "npx",
-        "args": [
-          "-y",
-          "sks-convert-file-mcp"
-        ],
-        "env": {
-          "npm_config_registry": "https://registry.npm.taobao.org"
-        },
-        "icon": "📄"
-      }
+  "sks-convert-file-mcp": {
+    "name": "文件格式转换 MCP",
+    "description": "支持CSV、JSON、YAML、Markdown、HTML、XML、Excel等多种格式之间的相互转换",
+    "command": "npx",
+    "args": ["-y", "sks-convert-file-mcp"],
+    "env": {
+      "npm_config_registry": "https://registry.npmmirror.com"
+    },
+    "icon": "📄"
+  }
+}
+```
+
+### 本地文件模式（11个工具，仅文件路径传参）⭐ 推荐
+
+加 `--local` 参数，工具名简洁无后缀，AI 只传文件路径字符串，**节省 token**：
+
+```json
+{
+  "sks-convert-file-mcp": {
+    "name": "文件格式转换 MCP (本地)",
+    "description": "支持CSV、JSON、YAML、Markdown、HTML、XML、Excel等多种格式之间的相互转换",
+    "command": "npx",
+    "args": ["-y", "sks-convert-file-mcp", "--local"],
+    "env": {
+      "npm_config_registry": "https://registry.npmmirror.com"
+    },
+    "icon": "📄"
+  }
 }
 ```
 
 ## 支持的转换工具
 
-### 文本格式转换
+### 通用模式（默认）
 
 | 工具 | 功能 | 输入参数 |
 |------|------|----------|
@@ -47,31 +65,51 @@ npx sks-convert-file-mcp
 | `markdown_to_html` | Markdown → HTML | `markdown_content` |
 | `xml_to_json` | XML → JSON | `xml_content` |
 | `json_to_xml` | JSON → XML | `json_content` |
-
-### Excel 转换
-
-| 工具 | 功能 | 输入参数 |
-|------|------|----------|
 | `excel_to_html` | Excel → HTML 表格 | `excel_base64` |
 | `excel_to_markdown` | Excel → Markdown 表格 | `excel_base64` |
 | `excel_to_json` | Excel → JSON | `excel_base64` |
 | `excel_to_csv` | Excel → CSV | `excel_base64` |
+| `csv_to_json_file` | CSV → JSON | `file_path` |
+| `json_to_csv_file` | JSON → CSV | `file_path` |
+| `json_to_yaml_file` | JSON → YAML | `file_path` |
+| `yaml_to_json_file` | YAML → JSON | `file_path` |
+| `markdown_to_html_file` | Markdown → HTML | `file_path` |
+| `xml_to_json_file` | XML → JSON | `file_path` |
+| `json_to_xml_file` | JSON → XML | `file_path` |
+| `excel_to_html_file` | Excel → HTML 表格 | `file_path` |
+| `excel_to_markdown_file` | Excel → Markdown 表格 | `file_path` |
+| `excel_to_json_file` | Excel → JSON | `file_path` |
+| `excel_to_csv_file` | Excel → CSV | `file_path` |
 
-> Excel 工具接收 Base64 编码的文件内容，支持多 Sheet 转换。
+### 本地文件模式（`--local`）
+
+| 工具 | 功能 | 输入参数 |
+|------|------|----------|
+| `csv_to_json` | CSV → JSON | `file_path` |
+| `json_to_csv` | JSON → CSV | `file_path` |
+| `json_to_yaml` | JSON → YAML | `file_path` |
+| `yaml_to_json` | YAML → JSON | `file_path` |
+| `markdown_to_html` | Markdown → HTML | `file_path` |
+| `xml_to_json` | XML → JSON | `file_path` |
+| `json_to_xml` | JSON → XML | `file_path` |
+| `excel_to_html` | Excel → HTML 表格 | `file_path` |
+| `excel_to_markdown` | Excel → Markdown 表格 | `file_path` |
+| `excel_to_json` | Excel → JSON | `file_path` |
+| `excel_to_csv` | Excel → CSV | `file_path` |
 
 ## 命令行工具
 
-项目附带独立的 CLI 工具，可直接转换本地 Excel 文件：
+项目附带独立的 CLI 工具，全局安装后可在任意目录直接使用：
 
 ```bash
 # 用法
-node convert-cli.js <输入文件> <输出格式>
+sks-convert-file <输入文件> <输出格式>
 
 # 示例
-node convert-cli.js "C:\path\to\file.xlsx" html
-node convert-cli.js "C:\path\to\file.xlsx" markdown
-node convert-cli.js "C:\path\to\file.xlsx" json
-node convert-cli.js "C:\path\to\file.xlsx" csv
+sks-convert-file "C:\path\to\file.xlsx" html
+sks-convert-file "C:\path\to\file.xlsx" markdown
+sks-convert-file "C:\path\to\file.xlsx" json
+sks-convert-file "C:\path\to\file.xlsx" csv
 ```
 
 支持的输出格式：`html`、`markdown`（输出 `.md`）、`json`、`csv`
@@ -83,21 +121,22 @@ node convert-cli.js "C:\path\to\file.xlsx" csv
 ```
 sks-convert-file-mcp/
 ├── src/
-│   ├── index.js          # MCP 服务器入口，注册所有工具
+│   ├── index.js              # MCP 服务器入口（支持 --local 参数切换模式）
 │   └── tools/
-│       ├── excel.js      # Excel 转换核心模块（单一来源）
-│       └── convert.js    # MCP 工具封装（处理 base64 解码与响应格式）
-├── convert-cli.js        # 独立 CLI 工具（引用核心模块）
-├── mcp-config.json       # MCP 客户端配置示例
+│       ├── excel.js          # Excel 转换核心模块（单一来源）
+│       ├── convert.js        # 内容版 MCP 工具封装
+│       └── convert-file.js   # 文件路径版 MCP 工具封装
+├── convert-cli.js            # 独立 CLI 工具（引用核心模块）
 └── package.json
 ```
 
 ### 架构说明
 
-Excel 转换逻辑统一封装在 [excel.js](src/tools/excel.js) 核心模块中，MCP 工具和 CLI 工具共同引用，避免重复维护：
+转换逻辑统一封装在核心模块中，MCP 工具和 CLI 工具共同引用，避免重复维护：
 
 - **excel.js** - 纯转换函数，接收 Buffer，返回字符串
-- **convert.js** - MCP 封装层，处理 Base64 解码和 MCP 响应格式
+- **convert.js** - 内容传参版，处理 Base64 解码和 MCP 响应格式
+- **convert-file.js** - 文件路径版，处理本地文件读取
 - **convert-cli.js** - CLI 封装层，处理文件读写和命令行参数
 
 ## 技术栈
@@ -111,4 +150,4 @@ Excel 转换逻辑统一封装在 [excel.js](src/tools/excel.js) 核心模块中
 
 ## License
 
-MIT
+MulanPSL-2.0

@@ -1,10 +1,11 @@
 {
   "name": "sks-convert-file-mcp",
-  "version": "1.1.0",
+  "version": "1.3.1",
   "description": "文件格式转换 MCP 服务器",
   "main": "src/index.js",
   "bin": {
-    "sks-convert-file-mcp": "src/index.js"
+    "sks-convert-file-mcp": "src/index.js",
+    "sks-convert-file": "convert-cli.js"
   },
   "scripts": {
     "start": "node src/index.js",
