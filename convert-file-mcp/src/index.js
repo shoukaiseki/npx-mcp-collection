@@ -4,7 +4,11 @@ const { McpServer } = require("@modelcontextprotocol/sdk/server/mcp.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { z } = require("zod");
 
-const isLocal = process.argv.includes('--local');
+const isStandard = process.argv.includes('--standard');
+const isLocal = !isStandard;
+
+// 启动诊断日志，输出到 stderr（不影响 MCP stdout 协议）
+console.error(`[sks-convert-file-mcp] v1.6.1 mode=${isLocal ? 'local' : 'standard'} argv=[${process.argv.slice(2).join(', ')}]`);
 
 async function main() {
   const server = new McpServer({
@@ -16,77 +20,77 @@ async function main() {
     // ===== 纯本地模式：文件路径传参，节省 token =====
     const fileTools = require('./tools/convert-file');
 
-    server.tool("csv_to_json",
+    server.tool("csv_to_json_local",
       { file_path: z.string().describe('CSV文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.csv_to_json_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("json_to_csv",
+    server.tool("json_to_csv_local",
       { file_path: z.string().describe('JSON文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.json_to_csv_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("json_to_yaml",
+    server.tool("json_to_yaml_local",
       { file_path: z.string().describe('JSON文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.json_to_yaml_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("yaml_to_json",
+    server.tool("yaml_to_json_local",
       { file_path: z.string().describe('YAML文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.yaml_to_json_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("markdown_to_html",
+    server.tool("markdown_to_html_local",
       { file_path: z.string().describe('Markdown文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.markdown_to_html_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("xml_to_json",
+    server.tool("xml_to_json_local",
       { file_path: z.string().describe('XML文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.xml_to_json_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("json_to_xml",
+    server.tool("json_to_xml_local",
       { file_path: z.string().describe('JSON文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.json_to_xml_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("excel_to_html",
+    server.tool("excel_to_html_local",
       { file_path: z.string().describe('Excel文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.excel_to_html_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("excel_to_markdown",
+    server.tool("excel_to_markdown_local",
       { file_path: z.string().describe('Excel文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.excel_to_markdown_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("excel_to_json",
+    server.tool("excel_to_json_local",
       { file_path: z.string().describe('Excel文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.excel_to_json_file({ file_path });
         return { content: [{ type: "text", text: r.content }] };
       });
 
-    server.tool("excel_to_csv",
+    server.tool("excel_to_csv_local",
       { file_path: z.string().describe('Excel文件的完整路径') },
       async ({ file_path }) => {
         const r = await fileTools.excel_to_csv_file({ file_path });

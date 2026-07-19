@@ -16,45 +16,44 @@ npx sks-convert-file-mcp
 
 在支持 MCP 的客户端中添加以下配置：
 
-### 通用模式（22个工具，内容传参 + 文件路径）
+### 本地文件模式（默认）⭐ 推荐
 
-```json
-{
-  "sks-convert-file-mcp": {
-    "name": "文件格式转换 MCP",
-    "description": "支持CSV、JSON、YAML、Markdown、HTML、XML、Excel等多种格式之间的相互转换",
-    "command": "npx",
-    "args": ["-y", "sks-convert-file-mcp"],
-    "env": {
-      "npm_config_registry": "https://registry.npmmirror.com"
-    },
-    "icon": "📄"
-  }
-}
-```
-
-### 本地文件模式（11个工具，仅文件路径传参）⭐ 推荐
-
-加 `--local` 参数，工具名简洁无后缀，AI 只传文件路径字符串，**节省 token**：
+默认启动即本地模式，工具名带 `_local` 后缀，AI 只传文件路径字符串，**节省 token**：
 
 ```json
 {
   "sks-convert-file-mcp": {
     "name": "文件格式转换 MCP (本地)",
-    "description": "支持CSV、JSON、YAML、Markdown、HTML、XML、Excel等多种格式之间的相互转换",
+    "description": "支持CSV、JSON、YAML、Markdown、HTML、XML、Excel等多种文件格式转换",
     "command": "npx",
-    "args": ["-y", "sks-convert-file-mcp", "--local"],
+    "args": ["-y", "sks-convert-file-mcp"],
     "env": {
       "npm_config_registry": "https://registry.npmmirror.com"
-    },
-    "icon": "📄"
+    }
+  }
+}
+```
+
+### 通用模式（需加 `--standard` 参数）
+
+加 `--standard` 参数启用内容传参版（22个工具），AI 直接传文件内容而非路径：
+
+```json
+{
+  "sks-convert-file-mcp": {
+    "name": "文件格式转换 MCP",
+    "command": "npx",
+    "args": ["-y", "sks-convert-file-mcp", "--standard"],
+    "env": {
+      "npm_config_registry": "https://registry.npmmirror.com"
+    }
   }
 }
 ```
 
 ## 支持的转换工具
 
-### 通用模式（默认）
+### 通用模式（`--standard`）
 
 | 工具 | 功能 | 输入参数 |
 |------|------|----------|
@@ -81,21 +80,21 @@ npx sks-convert-file-mcp
 | `excel_to_json_file` | Excel → JSON | `file_path` |
 | `excel_to_csv_file` | Excel → CSV | `file_path` |
 
-### 本地文件模式（`--local`）
+### 本地文件模式（默认，或加 `--local`）
 
 | 工具 | 功能 | 输入参数 |
 |------|------|----------|
-| `csv_to_json` | CSV → JSON | `file_path` |
-| `json_to_csv` | JSON → CSV | `file_path` |
-| `json_to_yaml` | JSON → YAML | `file_path` |
-| `yaml_to_json` | YAML → JSON | `file_path` |
-| `markdown_to_html` | Markdown → HTML | `file_path` |
-| `xml_to_json` | XML → JSON | `file_path` |
-| `json_to_xml` | JSON → XML | `file_path` |
-| `excel_to_html` | Excel → HTML 表格 | `file_path` |
-| `excel_to_markdown` | Excel → Markdown 表格 | `file_path` |
-| `excel_to_json` | Excel → JSON | `file_path` |
-| `excel_to_csv` | Excel → CSV | `file_path` |
+| `csv_to_json_local` | CSV → JSON | `file_path` |
+| `json_to_csv_local` | JSON → CSV | `file_path` |
+| `json_to_yaml_local` | JSON → YAML | `file_path` |
+| `yaml_to_json_local` | YAML → JSON | `file_path` |
+| `markdown_to_html_local` | Markdown → HTML | `file_path` |
+| `xml_to_json_local` | XML → JSON | `file_path` |
+| `json_to_xml_local` | JSON → XML | `file_path` |
+| `excel_to_html_local` | Excel → HTML 表格 | `file_path` |
+| `excel_to_markdown_local` | Excel → Markdown 表格 | `file_path` |
+| `excel_to_json_local` | Excel → JSON | `file_path` |
+| `excel_to_csv_local` | Excel → CSV | `file_path` |
 
 ## 命令行工具
 
